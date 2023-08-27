@@ -2,7 +2,7 @@
 
 ![Static Badge](https://img.shields.io/badge/License-GPL_v3-yellow)
 
-Integration plugin for [ocp-indent]{https://github.com/OCamlPro/ocp-indent}.
+Integration plugin for [ocp-indent](https://github.com/OCamlPro/ocp-indent).
 
 ## Features
 
