@@ -3,7 +3,7 @@ local api = vim.api
 local M = {
   default_opts = {
     on_save = false,
-    bindings = true,
+    bindings = false,
   },
 }
 
@@ -55,7 +55,7 @@ local function callback_bindings()
     wk.register({
       o = {
         name = 'ocp-indent',
-        i = { M.indent_visual_block, 'reindent' },
+        i = { M.indent_visual_block, 'reindent selection' },
       },
     },
     { mode = 'v', prefix = '<localleader>', buffer = 0 })
