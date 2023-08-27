@@ -49,22 +49,22 @@ local function indent_visual_block()
   run (start, end_, function(res) update_buffer(start, end_, res) end)
 end
 
-function M.set_bindings()
-  local callback = function()
-    if M.opts.integrations.which_key then
-      local wk = require('whick-key')
-      wk.register({
-        o = {
-          name = 'ocp-indent',
-          i = { M.indent_visual_block, 'ocp-indent' },
-        },
+function M.callback()
+  if M.opts.integrations.which_key then
+    local wk = require('whick-key')
+    wk.register({
+      o = {
+        name = 'ocp-indent',
+        i = { M.indent_visual_block, 'ocp-indent' },
       },
-      { mode = 'v', prefix = '<localleader>', buffer = 0 })
-    else
-      vim.keymap.set('v', '<localleader>oi', M.indent_visual_block)
-    end
+    },
+    { mode = 'v', prefix = '<localleader>', buffer = 0 })
+  else
+    vim.keymap.set('v', '<localleader>oi', M.indent_visual_block)
   end
+end
 
+function M.set_bindings()
   api.nvim_create_augroup('ocp-indent', {})
 
   vim.api.nvim_create_autocmd(
@@ -72,7 +72,7 @@ function M.set_bindings()
     {
       group = 'ocp-indent',
       pattern = { 'ocaml' },
-      callback = callback
+      callback = M.callback
     })
 end
 
