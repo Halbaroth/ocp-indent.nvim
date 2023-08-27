@@ -1,8 +1,8 @@
 # ocp-indent.nvim
 
-{![Static Badge](https://img.shields.io/badge/License-GPL_v3-yellow)}
+![Static Badge](https://img.shields.io/badge/License-GPL_v3-yellow)
 
-Integration plugin for {[]ocp-indent}.
+Integration plugin for [ocp-indent]{https://github.com/OCamlPro/ocp-indent}.
 
 ## Features
 
@@ -12,10 +12,10 @@ Integration plugin for {[]ocp-indent}.
   + Reindent on save.
 - (TODO) Detect ocp-indent configuration files.
 
-## Insatllation & Usage
+## Installation & Usage
 
 Install using your favorite package manager. For instance using
-[Lazy](https://github.com/folke/lazy.nvim):
+[Lazy](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
