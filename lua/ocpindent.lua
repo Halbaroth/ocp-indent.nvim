@@ -1,32 +1,26 @@
 local api = vim.api
-local job = require('plenary.job')
 
 local M = {
   default_opts = {
-    on_save = true,
+    on_save = false,
     bindings = true,
-    integrations = {
-      which_key = false,
-    },
   },
 }
 
 M.opts = M.default_opts
 
+local function error(msg)
+  vim.notify(msg, vim.log.levels.ERROR, {title = 'ocp-indent'})
+end
+
 local function run(start, end_, on_exit)
-  job:new({
-    command = 'ocp-indent',
-    args = { '--lines', start .. '-' .. end_ },
-    writer = vim.fn.getline('1', '$'),
-    on_exit = function(j, return_val)
-      print(return_val)
-      on_exit (j:result())
-    end,
-  }):sync()
+  local cmdline =
+    'ocp-indent --lines ' .. start .. '-' .. end_
+  local res = vim.fn.systemlist(cmdline, vim.fn.getline('1', '$'))
+  on_exit(res)
 end
 
 local function update_buffer(start, end_, res)
-  api.nvim_buf_set_option(0, 'modifiable', true)
   local lines = api.nvim_buf_get_lines(0, start-1, end_, true)
   local changed = false
   for i, _ in ipairs(lines) do
@@ -38,10 +32,9 @@ local function update_buffer(start, end_, res)
   if changed then
     api.nvim_buf_set_lines(0, start-1, end_, true, lines)
   end
-  api.nvim_buf_set_option(0, 'modifiable', false)
 end
 
-local function indent_visual_block()
+function M.indent_visual_block()
   local u = vim.fn.line('v')
   local v = vim.fn.line('.')
   local start = math.min(u, v)
@@ -49,13 +42,20 @@ local function indent_visual_block()
   run (start, end_, function(res) update_buffer(start, end_, res) end)
 end
 
-function M.callback()
-  if M.opts.integrations.which_key then
-    local wk = require('whick-key')
+function M.indent_buffer()
+  if vim.bo.filetype == 'ocaml' then
+    local end_ = vim.fn.line('$')
+    run (1, end_, function(res) update_buffer(1, end_, res) end)
+  end
+end
+
+local function callback_bindings()
+  local loaded, wk = pcall(require, 'which-key')
+  if loaded then
     wk.register({
       o = {
         name = 'ocp-indent',
-        i = { M.indent_visual_block, 'ocp-indent' },
+        i = { M.indent_visual_block, 'reindent' },
       },
     },
     { mode = 'v', prefix = '<localleader>', buffer = 0 })
@@ -64,28 +64,33 @@ function M.callback()
   end
 end
 
-function M.set_bindings()
-  api.nvim_create_augroup('ocp-indent', {})
-
-  vim.api.nvim_create_autocmd(
-    'FileType',
-    {
-      group = 'ocp-indent',
-      pattern = { 'ocaml' },
-      callback = M.callback
-    })
-end
-
 function M.setup(user_opts)
 	M.opts = vim.tbl_deep_extend("keep", user_opts or {}, M.default_opts)
 
   if vim.fn.executable('ocp-indent') == 0 then
-    print('ocp-indent: ocp-indent not in path. Aborting setup')
+    error('ocp-indent not in path. Aborting setup.')
     return
   end
 
+  api.nvim_create_augroup('ocp-indent', {})
+
   if M.opts.bindings then
-    M.set_bindings()
+    vim.api.nvim_create_autocmd(
+      'FileType',
+      {
+        group = 'ocp-indent',
+        pattern = { 'ocaml' },
+        callback = callback_bindings
+      })
+  end
+
+  if M.opts.on_save then
+    vim.api.nvim_create_autocmd(
+      'BufWritePre',
+      {
+        group = 'ocp-indent',
+        callback = M.indent_buffer
+      })
   end
 end
 
